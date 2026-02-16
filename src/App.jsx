@@ -1,41 +1,114 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getBlogs } from './services/api';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import FeaturedBlog from './components/FeaturedBlog';
+import LatestBlogs from './components/LatestBlogs';
+import TrendingBlogs from './components/TrendingBlogs';
+import Newsletter from './components/Newsletter';
+import ContactSection from './components/ContactSection';
+import BlogDetailsPage from './components/BlogDetailsPage';
+import Footer from './components/Footer';
 
 function App() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('');
+  const [route, setRoute] = useState({ name: 'home' });
 
   useEffect(() => {
-    getBlogs()
+    const parseHash = () => {
+      const hash = window.location.hash || '#/';
+      const blogMatch = hash.match(/^#\/blog\/(.+)$/);
+      if (blogMatch) {
+        const slug = decodeURIComponent(blogMatch[1]);
+        setRoute({ name: 'blog', slug });
+        return;
+      }
+      setRoute({ name: 'home' });
+    };
+
+    parseHash();
+    window.addEventListener('hashchange', parseHash);
+    return () => window.removeEventListener('hashchange', parseHash);
+  }, []);
+
+  const params = useMemo(() => {
+    const p = { page: 1, limit: 20 };
+    if (search) p.search = search;
+    if (category) p.category = category;
+    return p;
+  }, [search, category]);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    getBlogs(params)
       .then((res) => {
         if (res.success && res.data) setBlogs(res.data);
         else setError(res.message || 'Failed to load');
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [params]);
+
+  const featured = blogs[0] || null;
+  const latest = blogs.slice(featured ? 1 : 0, featured ? 7 : 6);
+  const latestForTrending = blogs;
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: 24 }}>
-      <h1>ThinkNest</h1>
-      <p style={{ color: '#666' }}>API: https://thinknest-4lep.onrender.com</p>
-      {loading && <p>Loading blogs…</p>}
-      {error && <p style={{ color: 'crimson' }}>{error}</p>}
-      {!loading && !error && (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {blogs.length === 0 ? (
-            <li>No blogs yet.</li>
-          ) : (
-            blogs.map((b) => (
-              <li key={b._id} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid #eee' }}>
-                <strong>{b.title}</strong>
-                <p style={{ margin: '4px 0 0', color: '#555', fontSize: 14 }}>{b.description}</p>
-              </li>
-            ))
-          )}
-        </ul>
+    <div className="min-h-screen flex flex-col bg-white">
+      {route.name !== 'blog' && (
+        <Helmet>
+          <title>ThinkNest - Think Better. Live Smarter</title>
+          <meta
+            name="description"
+            content="Discover blogs about health, technology, lifestyle and food."
+          />
+          <meta
+            name="keywords"
+            content="ThinkNest, health, technology, lifestyle, food, productivity, education, blogs"
+          />
+        </Helmet>
       )}
+      <Navbar onCategory={setCategory} />
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={route.name === 'blog' ? `blog:${route.slug}` : 'home'}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+        >
+          {route.name === 'blog' ? (
+            <BlogDetailsPage
+              slug={route.slug}
+              onBack={() => {
+                window.location.hash = '#/';
+              }}
+            />
+          ) : (
+            <>
+              <Hero onSearch={setSearch} onCategory={setCategory} />
+              {error && (
+                <div className="max-w-7xl mx-auto px-4 py-4 w-full">
+                  <p className="text-red-600 bg-red-50 rounded-xl px-4 py-2 text-sm">{error}</p>
+                </div>
+              )}
+              <FeaturedBlog blog={featured} />
+              <LatestBlogs blogs={latest} loading={loading} />
+              <TrendingBlogs />
+              <Newsletter />
+              <ContactSection />
+            </>
+          )}
+        </motion.div>
+      </AnimatePresence>
+      <Footer />
     </div>
   );
 }

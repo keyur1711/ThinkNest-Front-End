@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://localhost:5173/</loc>
+    <lastmod>2026-02-16T09:59:52.568Z</lastmod>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5173/blog/healthy-diet-plan</loc>
+    <lastmod>2026-02-16T09:39:39.011Z</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5173/blog/healthy-morning-routine-for-students</loc>
+    <lastmod>2026-02-16T05:51:47.268Z</lastmod>
+    <priority>0.8</priority>
+  </url>
+</urlset>
