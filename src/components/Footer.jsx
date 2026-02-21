@@ -1,10 +1,10 @@
 export default function Footer() {
   const quickLinks = [
     { label: 'Home', href: '/#/', category: '' },
-    { label: 'Technology', href: '/#/', category: 'Technology' },
-    { label: 'Health', href: '/#/', category: 'Health' },
-    { label: 'Lifestyle', href: '/#/', category: 'Lifestyle' },
-    { label: 'Food', href: '/#/', category: 'Food' },
+    { label: 'Technology', href: '/#/category/Technology', category: 'Technology' },
+    { label: 'Health', href: '/#/category/Health', category: 'Health' },
+    { label: 'Lifestyle', href: '/#/category/Lifestyle', category: 'Lifestyle' },
+    { label: 'Food', href: '/#/category/Food', category: 'Food' },
     { label: 'Contact', href: '#contact', category: null },
   ];
 
@@ -53,39 +53,20 @@ export default function Footer() {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const applyCategory = (category) => (e) => {
+  const applyCategory = (cat) => (e) => {
     e.preventDefault();
-    // If we are on a blog details page, go home first.
-    if (window.location.hash && window.location.hash.startsWith('#/blog/')) {
-      window.location.hash = '#/';
-      setTimeout(() => {
-        window.dispatchEvent(new HashChangeEvent('hashchange'));
-      }, 0);
-    }
-
-    // Let Navbar/App handle category via hash-less approach? We reuse localStorage as simple bridge.
-    // Navbar already supports category filtering via onCategory; home page will read it via UI interactions.
-    // Here we simply navigate home + scroll to top.
-    window.location.hash = '#/';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    if (category) {
-      // optional: store preferred category for later enhancement
-      try {
-        localStorage.setItem('thinknest_category', category);
-      } catch {
-        // ignore
-      }
+    if (cat) {
+      window.location.hash = `#/category/${encodeURIComponent(cat)}`;
     } else {
-      try {
-        localStorage.removeItem('thinknest_category');
-      } catch {
-        // ignore
-      }
+      window.location.hash = '#/';
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <footer className="bg-gray-950 text-gray-300">
+      {/* Top gradient line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           {/* Brand */}
@@ -105,7 +86,7 @@ export default function Footer() {
                   href={s.href}
                   aria-label={s.label}
                   title={s.label}
-                  className="p-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all duration-300"
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-primary-600/20 hover:border-primary-500/30 hover:shadow-lg hover:shadow-primary-500/10 hover:-translate-y-0.5 transition-all duration-300"
                 >
                   {s.icon}
                 </a>

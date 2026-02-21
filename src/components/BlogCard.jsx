@@ -18,16 +18,24 @@ export default function BlogCard({ blog, size = 'default', className = '' }) {
   const slug = blog?.slug || blog?._id;
   const readingTime = calculateReadingTime(blog?.content);
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (slug) {
+      window.location.hash = `#/blog/${slug}`;
+      window.scrollTo({ top: 0 });
+    }
+  };
+
   return (
     <motion.a
       href={slug ? `/#/blog/${slug}` : '#'}
-      className={`block group rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-primary-200 transition-all duration-300 ease-out ${className}`}
+      onClick={handleClick}
+      className={`block group cursor-pointer rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-primary-200 transition-all duration-300 ease-out ${className}`}
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
-      whileHover={{ scale: 1.02 }}
     >
       <div className={`relative bg-gray-100 overflow-hidden ${isLarge ? 'aspect-[16/9]' : 'aspect-video'}`}>
         {blog?.featuredImage ? (
@@ -41,7 +49,9 @@ export default function BlogCard({ blog, size = 'default', className = '' }) {
             <span className="text-4xl text-primary-300 font-bold">T</span>
           </div>
         )}
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white/95 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm">
+        {/* Hover gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-primary-50/95 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm border border-primary-100/50">
           {blog?.category || 'Blog'}
         </span>
       </div>

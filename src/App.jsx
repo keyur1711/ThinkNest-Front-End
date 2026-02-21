@@ -10,6 +10,13 @@ import TrendingBlogs from './components/TrendingBlogs';
 import Newsletter from './components/Newsletter';
 import ContactSection from './components/ContactSection';
 import BlogDetailsPage from './components/BlogDetailsPage';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import AdminBlogs from './components/AdminBlogs';
+import AdminCreateBlog from './components/AdminCreateBlog';
+import AdminComments from './components/AdminComments';
+import AdminSubscribers from './components/AdminSubscribers';
+import AdminMessages from './components/AdminMessages';
 import Footer from './components/Footer';
 
 function App() {
@@ -21,14 +28,78 @@ function App() {
   const [route, setRoute] = useState({ name: 'home' });
 
   useEffect(() => {
+    const getToken = () => {
+      try {
+        return localStorage.getItem('thinknest_admin_token');
+      } catch {
+        return null;
+      }
+    };
+
+    const requireAuth = () => {
+      if (!getToken()) {
+        window.location.replace('/#/admin/login');
+        return false;
+      }
+      return true;
+    };
+
     const parseHash = () => {
       const hash = window.location.hash || '#/';
       const blogMatch = hash.match(/^#\/blog\/(.+)$/);
+
+      const path = window.location.pathname || '/';
+      if (path.startsWith('/admin/dashboard')) {
+        if (!requireAuth()) return;
+        setRoute({ name: 'adminDashboard' });
+        return;
+      }
+      if (path.startsWith('/admin/create-blog')) {
+        if (!requireAuth()) return;
+        setRoute({ name: 'adminCreateBlog' });
+        return;
+      }
+      if (path.startsWith('/admin/comments')) {
+        if (!requireAuth()) return;
+        setRoute({ name: 'adminComments' });
+        return;
+      }
+      if (path.startsWith('/admin/subscribers')) {
+        if (!requireAuth()) return;
+        setRoute({ name: 'adminSubscribers' });
+        return;
+      }
+      if (path.startsWith('/admin/messages')) {
+        if (!requireAuth()) return;
+        setRoute({ name: 'adminMessages' });
+        return;
+      }
+      if (path.startsWith('/admin/blogs')) {
+        if (!requireAuth()) return;
+        setRoute({ name: 'adminBlogs' });
+        return;
+      }
+      if (hash === '#/admin/login') {
+        // Already logged in → go straight to dashboard
+        if (getToken()) {
+          window.location.replace('/admin/dashboard');
+          return;
+        }
+        setRoute({ name: 'adminLogin' });
+        return;
+      }
       if (blogMatch) {
         const slug = decodeURIComponent(blogMatch[1]);
         setRoute({ name: 'blog', slug });
         return;
       }
+      const categoryMatch = hash.match(/^#\/category\/(.+)$/);
+      if (categoryMatch) {
+        setCategory(decodeURIComponent(categoryMatch[1]));
+        setRoute({ name: 'home' });
+        return;
+      }
+      setCategory('');
       setRoute({ name: 'home' });
     };
 
@@ -75,10 +146,28 @@ function App() {
           />
         </Helmet>
       )}
-      <Navbar onCategory={setCategory} />
+      {!route.name.startsWith('admin') && <Navbar category={category} />}
       <AnimatePresence mode="wait">
         <motion.div
-          key={route.name === 'blog' ? `blog:${route.slug}` : 'home'}
+          key={
+            route.name === 'blog'
+              ? `blog:${route.slug}`
+              : route.name === 'adminLogin'
+              ? 'adminLogin'
+              : route.name === 'adminDashboard'
+              ? 'adminDashboard'
+              : route.name === 'adminBlogs'
+              ? 'adminBlogs'
+              : route.name === 'adminCreateBlog'
+              ? 'adminCreateBlog'
+              : route.name === 'adminComments'
+              ? 'adminComments'
+              : route.name === 'adminSubscribers'
+              ? 'adminSubscribers'
+              : route.name === 'adminMessages'
+              ? 'adminMessages'
+              : 'home'
+          }
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
@@ -91,9 +180,23 @@ function App() {
                 window.location.hash = '#/';
               }}
             />
+          ) : route.name === 'adminLogin' ? (
+            <AdminLogin />
+          ) : route.name === 'adminDashboard' ? (
+            <AdminDashboard />
+          ) : route.name === 'adminBlogs' ? (
+            <AdminBlogs />
+          ) : route.name === 'adminCreateBlog' ? (
+            <AdminCreateBlog />
+          ) : route.name === 'adminComments' ? (
+            <AdminComments />
+          ) : route.name === 'adminSubscribers' ? (
+            <AdminSubscribers />
+          ) : route.name === 'adminMessages' ? (
+            <AdminMessages />
           ) : (
             <>
-              <Hero onSearch={setSearch} onCategory={setCategory} />
+              <Hero onSearch={setSearch} category={category} />
               {error && (
                 <div className="max-w-7xl mx-auto px-4 py-4 w-full">
                   <p className="text-red-600 bg-red-50 rounded-xl px-4 py-2 text-sm">{error}</p>
@@ -108,7 +211,7 @@ function App() {
           )}
         </motion.div>
       </AnimatePresence>
-      <Footer />
+      {!route.name.startsWith('admin') && <Footer />}
     </div>
   );
 }

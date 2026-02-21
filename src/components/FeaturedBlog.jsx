@@ -32,7 +32,14 @@ export default function FeaturedBlog({ blog }) {
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured</h2>
       <motion.a
         href={slug ? `/#/blog/${slug}` : '#'}
-        className="group block relative w-full min-w-full rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 ease-out"
+        onClick={(e) => {
+          e.preventDefault();
+          if (slug) {
+            window.location.hash = `#/blog/${slug}`;
+            window.scrollTo({ top: 0 });
+          }
+        }}
+        className="group block relative w-full min-w-full rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer"
         whileHover={{ scale: 1.01 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >

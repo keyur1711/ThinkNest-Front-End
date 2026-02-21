@@ -2,49 +2,63 @@ import { useState, useEffect } from 'react';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/#/', category: '' },
-  { label: 'Technology', href: '/#/', category: 'Technology' },
-  { label: 'Health', href: '/#/', category: 'Health' },
-  { label: 'Lifestyle', href: '/#/', category: 'Lifestyle' },
-  { label: 'Food', href: '/#/', category: 'Food' },
+  { label: 'Technology', href: '/#/category/Technology', category: 'Technology' },
+  { label: 'Health', href: '/#/category/Health', category: 'Health' },
+  { label: 'Lifestyle', href: '/#/category/Lifestyle', category: 'Lifestyle' },
+  { label: 'Food', href: '/#/category/Food', category: 'Food' },
   { label: 'Contact', href: '#contact', category: null },
 ];
 
-export default function Navbar({ onCategory }) {
+export default function Navbar({ category }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('');
+
+  const isOnBlogPage = () => {
+    const hash = window.location.hash || '';
+    return hash.startsWith('#/blog/');
+  };
+
+  const navigateHome = (callback) => {
+    if (isOnBlogPage()) {
+      window.location.hash = '#/';
+      // Wait for route change, then execute callback
+      if (callback) setTimeout(callback, 100);
+    } else {
+      if (callback) callback();
+    }
+  };
 
   const handleNavClick = (e, link) => {
     e.preventDefault();
     setMobileOpen(false);
-    
+
     if (link.category === null) {
-      // Handle Contact link - scroll to contact section
-      const contactSection = document.querySelector('[data-contact]');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
-      }
+      // Handle Contact link - navigate home first if on blog page, then scroll
+      navigateHome(() => {
+        const contactSection = document.querySelector('[data-contact]');
+        if (contactSection) {
+          contactSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
       return;
     }
-    
-    setActiveCategory(link.category || '');
-    if (onCategory) {
-      onCategory(link.category || '');
+
+    if (link.category) {
+      window.location.hash = `#/category/${encodeURIComponent(link.category)}`;
+    } else {
+      window.location.hash = '#/';
     }
-    
-    // Scroll to top if not already there
-    if (window.scrollY > 0) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubscribe = (e) => {
     e.preventDefault();
     setMobileOpen(false);
-    // Scroll to newsletter section
-    const newsletterSection = document.querySelector('[data-newsletter]');
-    if (newsletterSection) {
-      newsletterSection.scrollIntoView({ behavior: 'smooth' });
-    }
+    navigateHome(() => {
+      const newsletterSection = document.querySelector('[data-newsletter]');
+      if (newsletterSection) {
+        newsletterSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
   };
 
   // Close mobile menu when clicking outside
@@ -75,12 +89,11 @@ export default function Navbar({ onCategory }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-18">
             {/* Logo */}
-            <a 
-              href="/#/" 
+            <a
+              href="/#/"
               onClick={(e) => {
                 e.preventDefault();
-                setActiveCategory('');
-                if (onCategory) onCategory('');
+                window.location.hash = '#/';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className="flex items-center gap-2 group"
@@ -92,20 +105,23 @@ export default function Navbar({ onCategory }) {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-1">
-              {NAV_LINKS.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                    activeCategory === (link.category || '')
-                      ? 'bg-white/60 text-primary-700 shadow-sm'
-                      : 'text-gray-700 hover:text-primary-600 hover:bg-white/40'
-                  }`}
-                >
-                  {link.label}
-                </a>
-              ))}
+              {NAV_LINKS.map((link) => {
+                const isActive = link.category !== null && (category || '') === (link.category || '');
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      isActive
+                        ? 'bg-white/60 text-primary-700 shadow-sm'
+                        : 'text-gray-700 hover:text-primary-600 hover:bg-white/40'
+                    }`}
+                  >
+                    {link.label}
+                  </a>
+                );
+              })}
             </div>
 
             {/* Right Side Actions */}
@@ -113,15 +129,13 @@ export default function Navbar({ onCategory }) {
               {/* Search Icon */}
               <button
                 onClick={() => {
-                  const heroSection = document.querySelector('section');
-                  if (heroSection) {
-                    heroSection.scrollIntoView({ behavior: 'smooth' });
-                    // Focus search input if it exists
-                    setTimeout(() => {
-                      const searchInput = document.querySelector('input[type="search"]');
-                      if (searchInput) searchInput.focus();
-                    }, 500);
-                  }
+                  navigateHome(() => {
+                    const searchInput = document.querySelector('input[type="search"]');
+                    if (searchInput) {
+                      searchInput.scrollIntoView({ behavior: 'smooth' });
+                      setTimeout(() => searchInput.focus(), 400);
+                    }
+                  });
                 }}
                 className="p-2 rounded-lg text-gray-700 hover:text-primary-600 hover:bg-white/40 transition-all duration-300"
                 aria-label="Search"
@@ -178,20 +192,23 @@ export default function Navbar({ onCategory }) {
         <div className="flex flex-col h-full p-6 overflow-y-auto">
           {/* Mobile Navigation Links */}
           <div className="flex flex-col gap-2 mb-6">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={(e) => handleNavClick(e, link)}
-                className={`px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 ${
-                  activeCategory === (link.category || '')
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-primary-600'
-                }`}
-              >
-                {link.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = link.category !== null && (category || '') === (link.category || '');
+              return (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => handleNavClick(e, link)}
+                  className={`px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 ${
+                    isActive
+                      ? 'bg-primary-100 text-primary-700'
+                      : 'text-gray-700 hover:bg-gray-100 hover:text-primary-600'
+                  }`}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
 
           {/* Mobile Actions */}
@@ -199,14 +216,13 @@ export default function Navbar({ onCategory }) {
             <button
               onClick={() => {
                 setMobileOpen(false);
-                const heroSection = document.querySelector('section');
-                if (heroSection) {
-                  heroSection.scrollIntoView({ behavior: 'smooth' });
-                  setTimeout(() => {
-                    const searchInput = document.querySelector('input[type="search"]');
-                    if (searchInput) searchInput.focus();
-                  }, 500);
-                }
+                navigateHome(() => {
+                  const searchInput = document.querySelector('input[type="search"]');
+                  if (searchInput) {
+                    searchInput.scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => searchInput.focus(), 400);
+                  }
+                });
               }}
               className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-all duration-300"
             >
