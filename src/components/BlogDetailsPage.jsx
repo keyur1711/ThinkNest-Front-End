@@ -306,9 +306,9 @@ export default function BlogDetailsPage({ slug, onBack }) {
 
         {!loading && !error && blog && (
           <>
-            <article className="rounded-3xl bg-white shadow-xl shadow-black/5 border border-gray-100 overflow-hidden">
+            <article className="rounded-3xl bg-white shadow-xl shadow-black/5 border border-gray-100">
               {/* Featured image */}
-              <div className="relative bg-gray-100 overflow-hidden">
+              <div className="relative bg-gray-100 overflow-hidden rounded-t-3xl">
                 <div className="aspect-[16/9]">
                   {blog?.featuredImage ? (
                     <img

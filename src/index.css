@@ -107,6 +107,11 @@ body {
   line-height: 1.5;
 }
 
+.blog-content {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
 .blog-content a {
   text-underline-offset: 3px;
 }
