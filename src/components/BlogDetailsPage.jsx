@@ -8,6 +8,80 @@ const calculateReadingTime = (content) => {
   return Math.max(1, Math.ceil(words / 200));
 };
 
+/**
+ * Detect whether a string contains meaningful HTML tags (not just plain text).
+ */
+const isHtmlContent = (str) => /<(p|h[1-6]|div|ul|ol|li|img|blockquote|pre|figure)\b/i.test(str);
+
+/**
+ * Convert plain text blog content into structured HTML.
+ * Handles numbered headings, emoji separators, bullet-like lines, and paragraphs.
+ */
+const plainTextToHtml = (text) => {
+  if (!text) return '';
+
+  // Normalize line breaks
+  const cleaned = text.replace(/\r\n/g, '\n');
+
+  // Split into blocks by double-newlines or single newlines
+  const lines = cleaned.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  let html = '';
+
+  for (const line of lines) {
+    // Numbered heading: "1. Title Text" or "1) Title Text" at the start
+    if (/^\d+[.)]\s+/.test(line)) {
+      const heading = line.replace(/^\d+[.)]\s+/, '');
+      html += `<h2>${heading}</h2>\n`;
+    }
+    // Standalone title-like words: single short line, all words capitalized
+    else if (
+      line.length < 60 &&
+      !line.endsWith('.') &&
+      !line.endsWith(':') &&
+      /^[A-Z][A-Za-z\s]+$/.test(line)
+    ) {
+      html += `<h2>${line}</h2>\n`;
+    }
+    // Lines starting with bullet markers
+    else if (/^[-–—•*]\s+/.test(line)) {
+      html += `<li>${line.replace(/^[-–—•*]\s+/, '')}</li>\n`;
+    }
+    // Regular paragraph
+    else {
+      html += `<p>${line}</p>\n`;
+    }
+  }
+
+  // Wrap consecutive <li> elements in <ul>
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>\n$1</ul>\n');
+
+  return html;
+};
+
+/**
+ * Convert Quill image-then-italic pattern into <figure>/<figcaption>.
+ * Matches: <p><img …></p> immediately followed by <p><em>caption</em></p>
+ */
+const processContentCaptions = (html) => {
+  if (!html) return '';
+  return html.replace(
+    /<p>\s*(<img\s[^>]*>)\s*<\/p>\s*<p>\s*<em>([^<]+)<\/em>\s*<\/p>/gi,
+    '<figure>$1<figcaption>$2</figcaption></figure>'
+  );
+};
+
+/**
+ * Full content processing pipeline:
+ * 1. Convert plain text to HTML if needed
+ * 2. Process image captions
+ */
+const processContent = (content) => {
+  if (!content) return '';
+  let html = isHtmlContent(content) ? content : plainTextToHtml(content);
+  html = processContentCaptions(html);
+  return html;
+};
+
 const formatDate = (dateStr) => {
   if (!dateStr) return '';
   const d = new Date(dateStr);
@@ -153,6 +227,26 @@ export default function BlogDetailsPage({ slug, onBack }) {
               : ['ThinkNest', blog?.category, 'blog', 'articles'].filter(Boolean).join(', ')
           }
         />
+        {blog?.title && <link rel="canonical" href={shareUrl} />}
+
+        {/* Open Graph */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={blog?.title || 'ThinkNest'} />
+        <meta property="og:description" content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'} />
+        <meta property="og:url" content={shareUrl} />
+        {blog?.featuredImage && <meta property="og:image" content={blog.featuredImage} />}
+        <meta property="og:site_name" content="ThinkNest" />
+        {blog?.createdAt && <meta property="article:published_time" content={new Date(blog.createdAt).toISOString()} />}
+        {blog?.category && <meta property="article:section" content={blog.category} />}
+        {Array.isArray(blog?.tags) && blog.tags.map((tag) => (
+          <meta key={tag} property="article:tag" content={tag} />
+        ))}
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content={blog?.featuredImage ? 'summary_large_image' : 'summary'} />
+        <meta name="twitter:title" content={blog?.title || 'ThinkNest'} />
+        <meta name="twitter:description" content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'} />
+        {blog?.featuredImage && <meta name="twitter:image" content={blog.featuredImage} />}
       </Helmet>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
         <div className="flex items-center justify-between mb-6">
@@ -289,9 +383,10 @@ export default function BlogDetailsPage({ slug, onBack }) {
               {/* Content */}
               <div className="px-6 sm:px-8 pb-8">
                 <div className="h-px bg-gray-100 mb-8" />
-                <div className="text-gray-800 leading-8 text-[15px] sm:text-[16px] md:text-[17px] whitespace-pre-line">
-                  {blog?.content}
-                </div>
+                <div
+                  className="blog-content prose lg:prose-xl max-w-none prose-gray prose-headings:text-gray-900 prose-a:text-primary-600 hover:prose-a:text-primary-700 prose-blockquote:border-primary-500 prose-img:rounded-xl prose-img:mx-auto prose-img:shadow-md"
+                  dangerouslySetInnerHTML={{ __html: processContent(blog?.content) }}
+                />
               </div>
             </article>
 

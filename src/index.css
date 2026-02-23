@@ -46,3 +46,67 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+/* ——— Quill Editor Overrides ——— */
+.quill-wrapper .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
+  background: #f9fafb;
+}
+
+.quill-wrapper .ql-container {
+  border: none !important;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.9375rem;
+}
+
+.quill-wrapper .ql-editor {
+  min-height: 280px;
+  padding: 1rem 1.25rem;
+  line-height: 1.8;
+}
+
+.quill-wrapper .ql-editor.ql-blank::before {
+  color: #9ca3af;
+  font-style: normal;
+}
+
+/* ——— Blog Content Prose Overrides ——— */
+.blog-content blockquote {
+  background: #f5f3ff;
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 0.75em 1.25em;
+}
+
+.blog-content img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.blog-content p > img {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+.blog-content figure {
+  margin: 2em 0;
+  text-align: center;
+}
+
+.blog-content figure img {
+  margin-bottom: 0;
+}
+
+.blog-content figcaption {
+  margin-top: 0.75em;
+  font-size: 0.875em;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+
+.blog-content a {
+  text-underline-offset: 3px;
+}

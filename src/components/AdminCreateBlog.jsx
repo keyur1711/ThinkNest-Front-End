@@ -1,6 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { createBlog } from '../services/api';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { createBlog, uploadContentImage } from '../services/api';
 import AdminLayout from './AdminLayout';
 
 const CATEGORIES = [
@@ -33,6 +35,51 @@ export default function AdminCreateBlog() {
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [message, setMessage] = useState('');
   const fileRef = useRef(null);
+  const quillRef = useRef(null);
+
+  const imageHandler = useCallback(() => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+      try {
+        const res = await uploadContentImage(file);
+        if (res?.success && res.url) {
+          const editor = quillRef.current?.getEditor();
+          if (editor) {
+            const range = editor.getSelection(true);
+            editor.insertEmbed(range.index, 'image', res.url);
+            editor.setSelection(range.index + 1);
+          }
+        } else {
+          alert(res?.message || 'Failed to upload image.');
+        }
+      } catch {
+        alert('Image upload failed. Please try again.');
+      }
+    };
+  }, []);
+
+  const quillModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ color: [] }, { background: [] }],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote', 'code-block'],
+        ['link', 'image'],
+        [{ align: [] }],
+        ['clean'],
+      ],
+      handlers: {
+        image: imageHandler,
+      },
+    },
+  }), [imageHandler]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,7 +119,8 @@ export default function AdminCreateBlog() {
     setStatus('loading');
     setMessage('');
 
-    if (!form.title.trim() || !form.content.trim() || !form.category) {
+    const strippedContent = form.content.replace(/<(.|\n)*?>/g, '').trim();
+    if (!form.title.trim() || !strippedContent || !form.category) {
       setStatus('error');
       setMessage('Title, content, and category are required.');
       return;
@@ -82,7 +130,7 @@ export default function AdminCreateBlog() {
       const formData = new FormData();
       formData.append('title', form.title.trim());
       formData.append('description', form.description.trim());
-      formData.append('content', form.content.trim());
+      formData.append('content', form.content);
       formData.append('category', form.category);
       tags.forEach((tag) => formData.append('tags', tag));
       if (image) formData.append('featuredImage', image);
@@ -186,15 +234,16 @@ export default function AdminCreateBlog() {
             <label className="block text-sm font-semibold text-gray-700">
               Content <span className="text-red-500">*</span>
             </label>
-            <textarea
-              name="content"
-              value={form.content}
-              onChange={handleChange}
-              disabled={isLoading}
-              placeholder="Write your full blog content here…"
-              rows={10}
-              className={`${inputClass} resize-y`}
-            />
+            <div className={`quill-wrapper rounded-xl border-2 border-gray-200 overflow-hidden transition hover:border-primary-300 focus-within:ring-2 focus-within:ring-primary-500 focus-within:border-primary-500 ${isLoading ? 'opacity-60 pointer-events-none' : ''}`}>
+              <ReactQuill
+                ref={quillRef}
+                theme="snow"
+                value={form.content}
+                onChange={(value) => setForm((prev) => ({ ...prev, content: value }))}
+                modules={quillModules}
+                placeholder="Write your full blog content here…"
+              />
+            </div>
           </div>
 
           {/* Category */}

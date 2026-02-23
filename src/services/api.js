@@ -163,6 +163,30 @@ export const deleteMessage = (id) => {
   });
 };
 
+// ——— Upload ———
+export const uploadContentImage = (file) => {
+  let token = null;
+  try {
+    token = localStorage.getItem('thinknest_admin_token');
+  } catch {
+    token = null;
+  }
+
+  const headers = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  return fetch(base('/api/upload/image'), {
+    method: 'POST',
+    headers,
+    body: formData,
+  }).then((r) => r.json());
+};
+
 // ——— Admin ———
 export const adminLogin = (credentials) =>
   fetch(base('/api/admin/login'), {
