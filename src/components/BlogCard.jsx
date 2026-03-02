@@ -30,14 +30,14 @@ export default function BlogCard({ blog, size = 'default', className = '' }) {
     <motion.a
       href={slug ? `/#/blog/${slug}` : '#'}
       onClick={handleClick}
-      className={`block group cursor-pointer rounded-2xl bg-white border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-primary-200 transition-all duration-300 ease-out ${className}`}
+      className={`block group cursor-pointer overflow-hidden tn-card tn-card-hover ${className}`}
       variants={fadeUp}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.45, ease: 'easeOut' }}
     >
-      <div className={`relative bg-gray-100 overflow-hidden ${isLarge ? 'aspect-[16/9]' : 'aspect-video'}`}>
+      <div className={`relative bg-slate-100 overflow-hidden ${isLarge ? 'aspect-[16/9]' : 'aspect-video'}`}>
         {blog?.featuredImage ? (
           <img
             src={blog.featuredImage}
@@ -45,24 +45,28 @@ export default function BlogCard({ blog, size = 'default', className = '' }) {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ease-out"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-50">
-            <span className="text-4xl text-primary-300 font-bold">T</span>
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-white">
+            <span className="text-4xl text-primary-300 font-extrabold">T</span>
           </div>
         )}
         {/* Hover gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-primary-50/95 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm border border-primary-100/50">
+        <span className="absolute top-3 left-3 tn-badge shadow-sm bg-white/80 backdrop-blur">
           {blog?.category || 'Blog'}
         </span>
       </div>
       <div className={`p-5 ${isLarge ? 'sm:p-6' : 'sm:p-5'}`}>
-        <h3 className={`font-bold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2 leading-tight ${isLarge ? 'text-xl sm:text-2xl mb-2' : 'text-lg mb-2'}`}>
+        <h3
+          className={`font-extrabold tracking-tight text-slate-900 group-hover:text-primary-700 transition-colors line-clamp-2 leading-tight ${
+            isLarge ? 'text-xl sm:text-2xl mb-2' : 'text-lg mb-2'
+          }`}
+        >
           {blog?.title}
         </h3>
-        <p className={`text-gray-600 line-clamp-2 leading-relaxed ${isLarge ? 'text-base mb-4' : 'text-sm mb-3'}`}>
+        <p className={`text-slate-600 line-clamp-2 leading-relaxed ${isLarge ? 'text-base mb-4' : 'text-sm mb-3'}`}>
           {blog?.description}
         </p>
-        <div className="flex items-center gap-4 text-xs text-gray-500">
+        <div className="flex items-center gap-4 text-xs text-slate-500">
           {blog?.views != null && (
             <div className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +85,7 @@ export default function BlogCard({ blog, size = 'default', className = '' }) {
             </div>
           )}
           {blog?.createdAt && (
-            <span className="ml-auto text-gray-400">
+            <span className="ml-auto text-slate-400">
               {new Date(blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
             </span>
           )}

@@ -21,27 +21,27 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-gray-50">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-50">
       {/* Topbar */}
-      <header className="sticky top-0 z-30 w-full bg-white border-b border-gray-200 shadow-sm">
+      <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-xl border-b border-slate-200/80 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 h-14 flex items-center justify-between gap-4">
           {/* Brand */}
           <span className="text-base font-bold text-primary-600 tracking-tight select-none">
-            ThinkNest <span className="text-gray-400 font-normal text-xs ml-1">Admin</span>
+            ThinkNest <span className="text-slate-400 font-normal text-xs ml-1">Admin</span>
           </span>
 
           {/* Nav links */}
-          <nav className="hidden sm:flex items-center gap-1">
+          <nav className="hidden sm:flex items-center gap-1 rounded-full bg-slate-50/80 border border-slate-200/80 px-1 py-0.5">
             {NAV_LINKS.map(({ label, href }) => {
               const isActive = currentPath.startsWith(href);
               return (
                 <a
                   key={href}
                   href={href}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${
                     isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-white text-primary-700 shadow-sm'
+                      : 'text-slate-600 hover:bg-white/60 hover:text-slate-900'
                   }`}
                 >
                   {label}
@@ -65,7 +65,7 @@ export default function AdminLayout({ children }) {
         </div>
 
         {/* Mobile nav */}
-        <div className="sm:hidden flex items-center gap-1 px-4 pb-2">
+        <div className="sm:hidden flex items-center gap-1 px-4 pb-2 bg-white/80 backdrop-blur">
           {NAV_LINKS.map(({ label, href }) => {
             const isActive = currentPath.startsWith(href);
             return (
@@ -75,7 +75,7 @@ export default function AdminLayout({ children }) {
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                   isActive
                     ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
                 {label}

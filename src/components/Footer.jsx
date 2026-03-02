@@ -64,19 +64,19 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-gray-950 text-gray-300">
+    <footer className="bg-slate-950 text-slate-300">
       {/* Top gradient line */}
-      <div className="h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+      <div className="h-px bg-gradient-to-r from-transparent via-primary-500/80 to-transparent" />
+      <div className="tn-container py-14">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
           {/* Brand */}
           <div className="md:col-span-5">
             <a href="/#/" className="inline-flex items-center gap-2">
-              <span className="text-2xl font-extrabold bg-gradient-to-r from-primary-400 to-primary-200 bg-clip-text text-transparent">
+              <span className="text-2xl font-extrabold bg-gradient-to-r from-primary-300 via-primary-200 to-slate-100 bg-clip-text text-transparent">
                 ThinkNest
               </span>
             </a>
-            <p className="mt-3 text-sm sm:text-base text-gray-400 max-w-md leading-relaxed">
+            <p className="mt-3 text-sm sm:text-base text-slate-400 max-w-md leading-relaxed">
               Think better with stories, ideas, and insights about health, technology, and life.
             </p>
             <div className="mt-6 flex items-center gap-3">
@@ -86,7 +86,7 @@ export default function Footer() {
                   href={s.href}
                   aria-label={s.label}
                   title={s.label}
-                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-primary-600/20 hover:border-primary-500/30 hover:shadow-lg hover:shadow-primary-500/10 hover:-translate-y-0.5 transition-all duration-300"
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-primary-500/25 hover:border-primary-400/40 hover:shadow-lg hover:shadow-primary-500/20 hover:-translate-y-0.5 transition-all duration-300"
                 >
                   {s.icon}
                 </a>
@@ -107,7 +107,7 @@ export default function Footer() {
                         ? scrollToContact
                         : applyCategory(l.category || '')
                     }
-                    className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-all duration-300 group"
+                    className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-all duration-300 group"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-primary-400/60 group-hover:bg-primary-300 transition" />
                     {l.label}
@@ -120,7 +120,7 @@ export default function Footer() {
           {/* Newsletter hint */}
           <div className="md:col-span-3">
             <h3 className="text-sm font-semibold text-white tracking-wide">Stay Updated</h3>
-            <p className="mt-4 text-sm text-gray-400 leading-relaxed">
+            <p className="mt-4 text-sm text-slate-400 leading-relaxed">
               Subscribe to get the latest articles delivered to your inbox.
             </p>
             <button
@@ -128,7 +128,7 @@ export default function Footer() {
                 const el = document.querySelector('[data-newsletter]');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="mt-5 inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-500/20 transition-all duration-300"
+              className="mt-5 inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-400 hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300"
             >
               Subscribe
             </button>
@@ -136,10 +136,10 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-slate-500">
             © 2026 ThinkNest. All rights reserved.
           </p>
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-slate-600">
             Built with React & Tailwind CSS
           </p>
         </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { addComment, getBlogBySlug, getCommentsByBlog } from '../services/api';
 import { Helmet } from 'react-helmet-async';
 
@@ -99,6 +99,9 @@ export default function BlogDetailsPage({ slug, onBack }) {
   const [commentStatus, setCommentStatus] = useState('idle'); // idle | loading | success | error
   const [commentMessage, setCommentMessage] = useState('');
   const [commentForm, setCommentForm] = useState({ name: '', email: '', comment: '' });
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  const contentRef = useRef(null);
 
   const readingTime = useMemo(() => calculateReadingTime(blog?.content), [blog?.content]);
   const shareUrl = useMemo(() => window.location.href, [slug]);
@@ -137,6 +140,35 @@ export default function BlogDetailsPage({ slug, onBack }) {
       .finally(() => alive && setCommentsLoading(false));
     return () => {
       alive = false;
+    };
+  }, [blog?._id]);
+
+  // Scroll progress based on main article column height
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!contentRef.current) return;
+      const el = contentRef.current;
+      const rect = el.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+      const totalScrollable = Math.max(el.offsetHeight - viewportHeight, 0);
+      const distanceScrolled = Math.min(Math.max(-rect.top, 0), totalScrollable);
+
+      if (totalScrollable <= 0) {
+        setScrollProgress(rect.top < 0 ? 100 : 0);
+        return;
+      }
+
+      const progress = (distanceScrolled / totalScrollable) * 100;
+      setScrollProgress(progress);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
     };
   }, [blog?._id]);
 
@@ -212,7 +244,7 @@ export default function BlogDetailsPage({ slug, onBack }) {
   };
 
   return (
-    <div className="w-full bg-gradient-to-b from-primary-50/40 to-white">
+    <div className="w-full bg-[radial-gradient(1100px_500px_at_20%_0%,rgba(99,102,241,0.14),transparent_60%),radial-gradient(900px_500px_at_90%_10%,rgba(129,140,248,0.10),transparent_60%),radial-gradient(900px_600px_at_50%_100%,rgba(15,23,42,0.06),transparent_60%)]">
       <Helmet>
         <title>{blog?.title ? `${blog.title} - ThinkNest` : 'ThinkNest'}</title>
         <meta
@@ -248,11 +280,22 @@ export default function BlogDetailsPage({ slug, onBack }) {
         <meta name="twitter:description" content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'} />
         {blog?.featuredImage && <meta name="twitter:image" content={blog.featuredImage} />}
       </Helmet>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+
+      {/* Reading progress bar (sits just under sticky navbar) */}
+      {!loading && !error && blog && (
+        <div className="fixed inset-x-0 top-16 md:top-[68px] z-40 h-[3px] bg-transparent pointer-events-none">
+          <div
+            className="h-full bg-primary-500 transition-[width] duration-150 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" ref={contentRef}>
         <div className="flex items-center justify-between mb-6">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-primary-700 transition"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-primary-700 transition"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -287,28 +330,28 @@ export default function BlogDetailsPage({ slug, onBack }) {
         </div>
 
         {loading && (
-          <div className="rounded-3xl bg-white shadow-lg shadow-black/5 border border-gray-100 overflow-hidden">
-            <div className="aspect-[16/9] bg-gray-200 animate-pulse" />
+          <div className="rounded-3xl bg-white/80 backdrop-blur-xl shadow-soft border border-slate-200/80 overflow-hidden">
+            <div className="aspect-[16/9] bg-slate-100 animate-pulse" />
             <div className="p-6 sm:p-8">
-              <div className="h-6 bg-gray-200 rounded w-1/3 animate-pulse mb-4" />
-              <div className="h-10 bg-gray-200 rounded w-3/4 animate-pulse mb-4" />
-              <div className="h-4 bg-gray-200 rounded w-full animate-pulse mb-2" />
-              <div className="h-4 bg-gray-200 rounded w-5/6 animate-pulse" />
+              <div className="h-6 bg-slate-200 rounded w-1/3 animate-pulse mb-4" />
+              <div className="h-10 bg-slate-200 rounded w-3/4 animate-pulse mb-4" />
+              <div className="h-4 bg-slate-200 rounded w-full animate-pulse mb-2" />
+              <div className="h-4 bg-slate-200 rounded w-5/6 animate-pulse" />
             </div>
           </div>
         )}
 
         {error && !loading && (
-          <div className="rounded-2xl bg-red-50 border border-red-200 text-red-700 px-4 py-3">
+          <div className="rounded-2xl bg-red-50/80 border border-red-200/70 text-red-700 px-4 py-3 shadow-sm">
             {error}
           </div>
         )}
 
         {!loading && !error && blog && (
           <>
-            <article className="rounded-3xl bg-white shadow-xl shadow-black/5 border border-gray-100">
+            <article className="rounded-3xl bg-white/90 backdrop-blur-xl shadow-soft border border-slate-200/80">
               {/* Featured image */}
-              <div className="relative bg-gray-100 overflow-hidden rounded-t-3xl">
+              <div className="relative bg-slate-900 overflow-hidden rounded-t-3xl">
                 <div className="aspect-[16/9]">
                   {blog?.featuredImage ? (
                     <img
@@ -317,24 +360,24 @@ export default function BlogDetailsPage({ slug, onBack }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-100 to-primary-50">
-                      <span className="text-6xl text-primary-300 font-bold">T</span>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800">
+                      <span className="text-6xl text-white/30 font-extrabold">T</span>
                     </div>
                   )}
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-black/0" />
-                <span className="absolute top-4 left-4 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/0" />
+                <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm border border-white/40">
                   {blog?.category || 'Blog'}
                 </span>
               </div>
 
               {/* Header */}
               <div className="p-6 sm:p-8">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
                   {blog?.title}
                 </h1>
 
-                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-600">
+                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
                   {blog?.createdAt && (
                     <div className="flex items-center gap-2">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -382,19 +425,19 @@ export default function BlogDetailsPage({ slug, onBack }) {
 
               {/* Content */}
               <div className="px-6 sm:px-8 pb-8">
-                <div className="h-px bg-gray-100 mb-8" />
+                <div className="h-px bg-slate-100 mb-8" />
                 <div
-                  className="blog-content prose lg:prose-xl max-w-none prose-gray prose-headings:text-gray-900 prose-a:text-primary-600 hover:prose-a:text-primary-700 prose-blockquote:border-primary-500 prose-img:rounded-xl prose-img:mx-auto prose-img:shadow-md"
+                  className="blog-content prose-sm sm:prose-base lg:prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-a:text-primary-600 hover:prose-a:text-primary-700 prose-blockquote:border-primary-500 prose-img:rounded-xl prose-img:mx-auto prose-img:shadow-md"
                   dangerouslySetInnerHTML={{ __html: processContent(blog?.content) }}
                 />
               </div>
             </article>
 
             {/* Comments */}
-            <section className="mt-8 rounded-3xl bg-white shadow-xl shadow-black/5 border border-gray-100 p-6 sm:p-8">
+            <section className="mt-8 rounded-3xl bg-white/90 backdrop-blur-xl shadow-soft border border-slate-200/80 p-6 sm:p-8">
               <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Comments</h2>
-                <span className="text-sm text-gray-500">{comments.length} total</span>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Comments</h2>
+                <span className="text-sm text-slate-500">{comments.length} total</span>
               </div>
 
               <form onSubmit={submitComment} className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -403,7 +446,7 @@ export default function BlogDetailsPage({ slug, onBack }) {
                   value={commentForm.name}
                   onChange={onCommentChange}
                   placeholder="Your name"
-                  className="px-4 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary-500 outline-none transition"
+                  className="tn-input"
                   disabled={commentStatus === 'loading'}
                   required
                 />
@@ -413,7 +456,7 @@ export default function BlogDetailsPage({ slug, onBack }) {
                   value={commentForm.email}
                   onChange={onCommentChange}
                   placeholder="you@example.com"
-                  className="px-4 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary-500 outline-none transition"
+                  className="tn-input"
                   disabled={commentStatus === 'loading'}
                   required
                 />
@@ -423,7 +466,7 @@ export default function BlogDetailsPage({ slug, onBack }) {
                   onChange={onCommentChange}
                   placeholder="Write a comment..."
                   rows={4}
-                  className="sm:col-span-2 px-4 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-primary-500 outline-none transition resize-none"
+                  className="sm:col-span-2 tn-textarea"
                   disabled={commentStatus === 'loading'}
                   required
                 />
@@ -431,14 +474,14 @@ export default function BlogDetailsPage({ slug, onBack }) {
                   <button
                     type="submit"
                     disabled={commentStatus === 'loading'}
-                    className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-primary-600 text-white font-semibold hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-200/50 transition disabled:opacity-70"
+                    className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-primary-600 text-white font-semibold hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-200/50 transition disabled:opacity-70"
                   >
                     {commentStatus === 'loading' ? 'Posting…' : 'Post Comment'}
                   </button>
                   {commentMessage && (
                     <span
                       className={`text-sm font-medium ${
-                        commentStatus === 'error' ? 'text-red-600' : 'text-green-600'
+                        commentStatus === 'error' ? 'text-red-600' : 'text-emerald-600'
                       }`}
                     >
                       {commentMessage}
@@ -449,22 +492,22 @@ export default function BlogDetailsPage({ slug, onBack }) {
 
               <div className="mt-8 space-y-4">
                 {commentsLoading && (
-                  <div className="text-sm text-gray-500">Loading comments…</div>
+                  <div className="text-sm text-slate-500">Loading comments…</div>
                 )}
                 {!commentsLoading && comments.length === 0 && (
-                  <div className="text-sm text-gray-500">No comments yet. Be the first to comment.</div>
+                  <div className="text-sm text-slate-500">No comments yet. Be the first to comment.</div>
                 )}
                 {comments.map((c) => (
-                  <div key={c._id} className="rounded-2xl border border-gray-100 bg-gray-50/40 p-4">
+                  <div key={c._id} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="font-semibold text-gray-900">{c.name || 'Anonymous'}</div>
+                      <div className="font-semibold text-slate-900">{c.name || 'Anonymous'}</div>
                       {c.createdAt && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-slate-500">
                           {new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>
                       )}
                     </div>
-                    <p className="mt-2 text-sm text-gray-700 leading-6 whitespace-pre-line">{c.comment}</p>
+                    <p className="mt-2 text-sm text-slate-700 leading-6 whitespace-pre-line">{c.comment}</p>
                   </div>
                 ))}
               </div>

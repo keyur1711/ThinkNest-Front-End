@@ -23,13 +23,16 @@ export default function FeaturedBlog({ blog }) {
 
   return (
     <motion.section
-      className="w-full max-w-screen-2xl mx-auto px-3 sm:px-6 lg:px-8 py-10 md:py-14"
+      className="tn-container tn-section"
       initial={{ opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
     >
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-1 h-7 rounded-full bg-primary-500" />
+        <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">Featured</h2>
+      </div>
       <motion.a
         href={slug ? `/#/blog/${slug}` : '#'}
         onClick={(e) => {
@@ -39,12 +42,12 @@ export default function FeaturedBlog({ blog }) {
             window.scrollTo({ top: 0 });
           }
         }}
-        className="group block relative w-full min-w-full rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 ease-out cursor-pointer"
+        className="group block relative w-full min-w-full rounded-3xl overflow-hidden shadow-[0_18px_55px_rgba(2,6,23,0.14)] hover:shadow-[0_26px_70px_rgba(2,6,23,0.18)] transition-all duration-300 ease-out cursor-pointer border border-white/30"
         whileHover={{ scale: 1.01 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
       >
         {/* Background Image Container */}
-        <div className="relative w-full min-w-full overflow-hidden bg-gray-100 h-[360px] sm:h-[460px] md:h-[540px] lg:h-[600px]">
+        <div className="relative w-full min-w-full overflow-hidden bg-slate-900 h-[360px] sm:h-[460px] md:h-[540px] lg:h-[600px]">
           {blog?.featuredImage && imageOk ? (
             <img
               src={blog.featuredImage}
@@ -54,23 +57,23 @@ export default function FeaturedBlog({ blog }) {
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800">
-              <span className="text-6xl text-white/30 font-bold">T</span>
+              <span className="text-6xl text-white/30 font-extrabold">T</span>
             </div>
           )}
           
           {/* Dark Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30 group-hover:from-black/85 group-hover:via-black/55 group-hover:to-black/35 transition-all duration-500 ease-out"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/20 group-hover:from-black/90 group-hover:via-black/50 group-hover:to-black/25 transition-all duration-500 ease-out"></div>
           
           {/* Content Overlay */}
           <div className="absolute inset-0 flex flex-col items-start justify-end p-4 sm:p-6 md:p-8 lg:p-10">
             <div className="w-full max-w-3xl">
               {/* Category Badge */}
-              <span className="inline-block px-3 py-1.5 mb-3 sm:mb-4 rounded-lg bg-white/95 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm">
+              <span className="inline-block px-3 py-1.5 mb-3 sm:mb-4 rounded-full bg-white/85 backdrop-blur text-xs font-semibold text-primary-700 shadow-sm border border-white/40">
                 {blog?.category || 'Blog'}
               </span>
               
               {/* Title */}
-              <h3 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-4 leading-tight tracking-tight break-words group-hover:text-primary-200 transition-colors duration-300">
+              <h3 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-3 sm:mb-4 leading-tight tracking-tight break-words group-hover:text-primary-200 transition-colors duration-300">
                 {blog?.title}
               </h3>
               
@@ -106,7 +109,7 @@ export default function FeaturedBlog({ blog }) {
               </div>
               
               {/* Read More Button */}
-              <button className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-7 sm:py-3.5 rounded-xl bg-primary-600 text-white text-sm sm:text-base font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:translate-x-1">
+              <button className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-7 sm:py-3.5 rounded-2xl bg-primary-600 text-white text-sm sm:text-base font-semibold hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-300 shadow-lg hover:shadow-xl group-hover:translate-x-1">
                 <span>Read More</span>
                 <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />

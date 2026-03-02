@@ -8,9 +8,78 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  @apply bg-white text-gray-800 antialiased;
-  font-family: 'Inter', system-ui, sans-serif;
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    @apply antialiased text-slate-900 bg-slate-50;
+  }
+
+  /* Better default focus visibility */
+  :focus-visible {
+    outline: none;
+  }
+}
+
+@layer components {
+  .tn-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .tn-section {
+    @apply py-12 md:py-16;
+  }
+
+  .tn-surface {
+    @apply bg-white/80 backdrop-blur-xl border border-slate-200/70 shadow-[0_10px_30px_rgba(2,6,23,0.06)];
+  }
+
+  .tn-card {
+    @apply rounded-3xl tn-surface;
+  }
+
+  .tn-card-hover {
+    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(2,6,23,0.10)] hover:border-primary-200/60;
+  }
+
+  .tn-pill {
+    @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium bg-white/70 border border-slate-200/70;
+  }
+
+  .tn-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-200/40;
+  }
+
+  .tn-input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition;
+    @apply focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30;
+    @apply disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .tn-textarea {
+    @apply tn-input resize-none;
+  }
+
+  .tn-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-200;
+    @apply focus:ring-2 focus:ring-primary-500/40 focus:ring-offset-2 focus:ring-offset-slate-50;
+    @apply disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  .tn-btn-primary {
+    @apply tn-btn bg-primary-600 text-white shadow-sm hover:bg-primary-700 hover:shadow-md;
+  }
+
+  .tn-btn-secondary {
+    @apply tn-btn bg-slate-900 text-white shadow-sm hover:bg-slate-800 hover:shadow-md;
+  }
+
+  .tn-btn-ghost {
+    @apply tn-btn bg-white/70 text-slate-700 border border-slate-200/80 hover:bg-white hover:text-slate-900;
+  }
 }
 
 ::selection {
@@ -51,7 +120,7 @@ body {
 .quill-wrapper .ql-toolbar {
   border: none !important;
   border-bottom: 1px solid #e5e7eb !important;
-  background: #f9fafb;
+  background: rgba(248, 250, 252, 0.9);
 }
 
 .quill-wrapper .ql-container {
@@ -72,10 +141,44 @@ body {
 }
 
 /* ——— Blog Content Prose Overrides ——— */
+.blog-content {
+  max-width: 60rem;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 0.95rem;
+  line-height: 1.8;
+}
+
 .blog-content blockquote {
-  background: #f5f3ff;
+  background: rgba(245, 243, 255, 0.9);
   border-radius: 0 0.5rem 0.5rem 0;
   padding: 0.75em 1.25em;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.blog-content h1 {
+  font-size: 1.7rem;
+}
+
+.blog-content h2 {
+  font-size: 1.35rem;
+}
+
+.blog-content h3 {
+  font-size: 1.15rem;
+}
+
+.blog-content p {
+  margin-bottom: 1.1em;
 }
 
 .blog-content img {

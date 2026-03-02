@@ -132,7 +132,7 @@ function App() {
   const latestForTrending = blogs;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[radial-gradient(1200px_700px_at_20%_-10%,rgba(99,102,241,0.18),transparent_55%),radial-gradient(900px_600px_at_90%_0%,rgba(129,140,248,0.12),transparent_55%),radial-gradient(900px_600px_at_50%_100%,rgba(15,23,42,0.06),transparent_60%)]">
       {route.name !== 'blog' && (
         <Helmet>
           <title>ThinkNest - Think Better. Live Smarter</title>
@@ -198,8 +198,10 @@ function App() {
             <>
               <Hero onSearch={setSearch} category={category} />
               {error && (
-                <div className="max-w-7xl mx-auto px-4 py-4 w-full">
-                  <p className="text-red-600 bg-red-50 rounded-xl px-4 py-2 text-sm">{error}</p>
+                <div className="tn-container py-4 w-full">
+                  <p className="text-red-700 bg-red-50/80 backdrop-blur rounded-2xl px-4 py-3 text-sm border border-red-200/60 shadow-sm">
+                    {error}
+                  </p>
                 </div>
               )}
               <FeaturedBlog blog={featured} />
