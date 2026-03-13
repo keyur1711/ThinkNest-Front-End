@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { addComment, getBlogBySlug, getCommentsByBlog } from '../services/api';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const calculateReadingTime = (content) => {
   if (!content) return null;
@@ -8,60 +9,28 @@ const calculateReadingTime = (content) => {
   return Math.max(1, Math.ceil(words / 200));
 };
 
-/**
- * Detect whether a string contains meaningful HTML tags (not just plain text).
- */
 const isHtmlContent = (str) => /<(p|h[1-6]|div|ul|ol|li|img|blockquote|pre|figure)\b/i.test(str);
 
-/**
- * Convert plain text blog content into structured HTML.
- * Handles numbered headings, emoji separators, bullet-like lines, and paragraphs.
- */
 const plainTextToHtml = (text) => {
   if (!text) return '';
-
-  // Normalize line breaks
   const cleaned = text.replace(/\r\n/g, '\n');
-
-  // Split into blocks by double-newlines or single newlines
   const lines = cleaned.split(/\n+/).map((l) => l.trim()).filter(Boolean);
   let html = '';
-
   for (const line of lines) {
-    // Numbered heading: "1. Title Text" or "1) Title Text" at the start
     if (/^\d+[.)]\s+/.test(line)) {
-      const heading = line.replace(/^\d+[.)]\s+/, '');
-      html += `<h2>${heading}</h2>\n`;
-    }
-    // Standalone title-like words: single short line, all words capitalized
-    else if (
-      line.length < 60 &&
-      !line.endsWith('.') &&
-      !line.endsWith(':') &&
-      /^[A-Z][A-Za-z\s]+$/.test(line)
-    ) {
+      html += `<h2>${line.replace(/^\d+[.)]\s+/, '')}</h2>\n`;
+    } else if (line.length < 60 && !line.endsWith('.') && !line.endsWith(':') && /^[A-Z][A-Za-z\s]+$/.test(line)) {
       html += `<h2>${line}</h2>\n`;
-    }
-    // Lines starting with bullet markers
-    else if (/^[-–—•*]\s+/.test(line)) {
-      html += `<li>${line.replace(/^[-–—•*]\s+/, '')}</li>\n`;
-    }
-    // Regular paragraph
-    else {
+    } else if (/^[-\u2013\u2014\u2022*]\s+/.test(line)) {
+      html += `<li>${line.replace(/^[-\u2013\u2014\u2022*]\s+/, '')}</li>\n`;
+    } else {
       html += `<p>${line}</p>\n`;
     }
   }
-
-  // Wrap consecutive <li> elements in <ul>
   html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>\n$1</ul>\n');
-
   return html;
 };
 
-/**
- * Convert Quill image-then-italic pattern into <figure>/<figcaption>.
- * Matches: <p><img …></p> immediately followed by <p><em>caption</em></p>
- */
 const processContentCaptions = (html) => {
   if (!html) return '';
   return html.replace(
@@ -70,11 +39,6 @@ const processContentCaptions = (html) => {
   );
 };
 
-/**
- * Full content processing pipeline:
- * 1. Convert plain text to HTML if needed
- * 2. Process image captions
- */
 const processContent = (content) => {
   if (!content) return '';
   let html = isHtmlContent(content) ? content : plainTextToHtml(content);
@@ -93,14 +57,12 @@ export default function BlogDetailsPage({ slug, onBack }) {
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [comments, setComments] = useState([]);
   const [commentsLoading, setCommentsLoading] = useState(false);
-  const [commentStatus, setCommentStatus] = useState('idle'); // idle | loading | success | error
+  const [commentStatus, setCommentStatus] = useState('idle');
   const [commentMessage, setCommentMessage] = useState('');
   const [commentForm, setCommentForm] = useState({ name: '', email: '', comment: '' });
   const [scrollProgress, setScrollProgress] = useState(0);
-
   const contentRef = useRef(null);
 
   const readingTime = useMemo(() => calculateReadingTime(blog?.content), [blog?.content]);
@@ -111,7 +73,6 @@ export default function BlogDetailsPage({ slug, onBack }) {
     setLoading(true);
     setError(null);
     setBlog(null);
-
     getBlogBySlug(slug)
       .then((res) => {
         if (!alive) return;
@@ -120,10 +81,7 @@ export default function BlogDetailsPage({ slug, onBack }) {
       })
       .catch((err) => alive && setError(err?.message || 'Failed to load blog'))
       .finally(() => alive && setLoading(false));
-
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [slug]);
 
   useEffect(() => {
@@ -138,34 +96,23 @@ export default function BlogDetailsPage({ slug, onBack }) {
       })
       .catch(() => alive && setComments([]))
       .finally(() => alive && setCommentsLoading(false));
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, [blog?._id]);
 
-  // Scroll progress based on main article column height
   useEffect(() => {
     const handleScroll = () => {
       if (!contentRef.current) return;
       const el = contentRef.current;
       const rect = el.getBoundingClientRect();
-      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-      const totalScrollable = Math.max(el.offsetHeight - viewportHeight, 0);
-      const distanceScrolled = Math.min(Math.max(-rect.top, 0), totalScrollable);
-
-      if (totalScrollable <= 0) {
-        setScrollProgress(rect.top < 0 ? 100 : 0);
-        return;
-      }
-
-      const progress = (distanceScrolled / totalScrollable) * 100;
-      setScrollProgress(progress);
+      const vh = window.innerHeight || document.documentElement.clientHeight || 0;
+      const total = Math.max(el.offsetHeight - vh, 0);
+      const scrolled = Math.min(Math.max(-rect.top, 0), total);
+      if (total <= 0) { setScrollProgress(rect.top < 0 ? 100 : 0); return; }
+      setScrollProgress((scrolled / total) * 100);
     };
-
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleScroll);
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleScroll);
@@ -175,31 +122,19 @@ export default function BlogDetailsPage({ slug, onBack }) {
   const handleShare = async (type) => {
     const title = blog?.title || 'ThinkNest';
     const url = shareUrl;
-
     if (type === 'native' && navigator.share) {
-      try {
-        await navigator.share({ title, url });
-      } catch {
-        // user cancelled
-      }
+      try { await navigator.share({ title, url }); } catch {}
       return;
     }
-
     if (type === 'copy') {
       try {
         await navigator.clipboard.writeText(url);
         setCommentMessage('Link copied!');
         setCommentStatus('success');
-        setTimeout(() => {
-          setCommentStatus('idle');
-          setCommentMessage('');
-        }, 1500);
-      } catch {
-        // ignore
-      }
+        setTimeout(() => { setCommentStatus('idle'); setCommentMessage(''); }, 1500);
+      } catch {}
       return;
     }
-
     const shareLinks = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
@@ -216,7 +151,6 @@ export default function BlogDetailsPage({ slug, onBack }) {
     e.preventDefault();
     if (!blog?._id) return;
     if (!commentForm.name.trim() || !commentForm.email.trim() || !commentForm.comment.trim()) return;
-
     setCommentStatus('loading');
     setCommentMessage('');
     try {
@@ -230,7 +164,6 @@ export default function BlogDetailsPage({ slug, onBack }) {
         setCommentStatus('success');
         setCommentMessage('Comment added!');
         setCommentForm({ name: '', email: '', comment: '' });
-        // refresh comments
         const refresh = await getCommentsByBlog(blog._id);
         if (refresh?.success && Array.isArray(refresh?.data)) setComments(refresh.data);
       } else {
@@ -243,25 +176,15 @@ export default function BlogDetailsPage({ slug, onBack }) {
     }
   };
 
+  const avatarColors = ['bg-primary-100 text-primary-700', 'bg-blue-100 text-blue-700', 'bg-amber-100 text-amber-700', 'bg-rose-100 text-rose-700', 'bg-purple-100 text-purple-700'];
+
   return (
-    <div className="w-full bg-[radial-gradient(1100px_500px_at_20%_0%,rgba(99,102,241,0.14),transparent_60%),radial-gradient(900px_500px_at_90%_10%,rgba(129,140,248,0.10),transparent_60%),radial-gradient(900px_600px_at_50%_100%,rgba(15,23,42,0.06),transparent_60%)]">
+    <div className="min-h-screen bg-white">
       <Helmet>
         <title>{blog?.title ? `${blog.title} - ThinkNest` : 'ThinkNest'}</title>
-        <meta
-          name="description"
-          content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'}
-        />
-        <meta
-          name="keywords"
-          content={
-            Array.isArray(blog?.tags) && blog.tags.length
-              ? blog.tags.join(', ')
-              : ['ThinkNest', blog?.category, 'blog', 'articles'].filter(Boolean).join(', ')
-          }
-        />
+        <meta name="description" content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'} />
+        <meta name="keywords" content={Array.isArray(blog?.tags) && blog.tags.length ? blog.tags.join(', ') : ['ThinkNest', blog?.category, 'blog', 'articles'].filter(Boolean).join(', ')} />
         {blog?.title && <link rel="canonical" href={shareUrl} />}
-
-        {/* Open Graph */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={blog?.title || 'ThinkNest'} />
         <meta property="og:description" content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'} />
@@ -273,85 +196,105 @@ export default function BlogDetailsPage({ slug, onBack }) {
         {Array.isArray(blog?.tags) && blog.tags.map((tag) => (
           <meta key={tag} property="article:tag" content={tag} />
         ))}
-
-        {/* Twitter Card */}
         <meta name="twitter:card" content={blog?.featuredImage ? 'summary_large_image' : 'summary'} />
         <meta name="twitter:title" content={blog?.title || 'ThinkNest'} />
         <meta name="twitter:description" content={blog?.description || 'Discover blogs about health, technology, lifestyle and food.'} />
         {blog?.featuredImage && <meta name="twitter:image" content={blog.featuredImage} />}
       </Helmet>
 
-      {/* Reading progress bar (sits just under sticky navbar) */}
+      {/* Reading progress */}
       {!loading && !error && blog && (
-        <div className="fixed inset-x-0 top-16 md:top-[68px] z-40 h-[3px] bg-transparent pointer-events-none">
-          <div
-            className="h-full bg-primary-500 transition-[width] duration-150 ease-out"
+        <div className="fixed inset-x-0 top-16 z-40 h-0.5 bg-neutral-100 pointer-events-none">
+          <motion.div
+            className="h-full bg-gradient-to-r from-primary-400 to-emerald-400"
             style={{ width: `${scrollProgress}%` }}
+            transition={{ duration: 0.1 }}
           />
         </div>
       )}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" ref={contentRef}>
-        <div className="flex items-center justify-between mb-6">
-          <button
+      <div className="max-w-3xl mx-auto px-5 sm:px-6 py-8 md:py-12" ref={contentRef}>
+        {/* Top bar */}
+        <motion.div
+          className="flex items-center justify-between mb-8"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <motion.button
             onClick={onBack}
-            className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 hover:text-primary-700 transition"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-neutral-500 hover:text-neutral-900 transition-colors"
+            whileHover={{ x: -3 }}
+            whileTap={{ scale: 0.95 }}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
             </svg>
             Back
-          </button>
+          </motion.button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {navigator.share && (
-              <button
+              <motion.button
                 onClick={() => handleShare('native')}
-                className="p-2 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:shadow-md hover:border-primary-200 transition"
-                aria-label="Share"
-                title="Share"
+                className="p-2 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-50 transition-all"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Share" title="Share"
               >
-                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 8a3 3 0 10-6 0m6 0a3 3 0 01-6 0m6 0l5 3m-11-3L4 11m11 0a3 3 0 10-6 0m6 0a3 3 0 01-6 0m6 0l5 3m-11-3L4 14" />
+                <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                 </svg>
-              </button>
+              </motion.button>
             )}
-            <button
+            <motion.button
               onClick={() => handleShare('copy')}
-              className="p-2 rounded-lg bg-white/80 border border-gray-200 shadow-sm hover:shadow-md hover:border-primary-200 transition"
-              aria-label="Copy link"
-              title="Copy link"
+              className="p-2 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-50 transition-all"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Copy link" title="Copy link"
             >
-              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16h8M8 12h8m-6 8h6a2 2 0 002-2V8a2 2 0 00-2-2h-6m-2 0H8a2 2 0 00-2 2v10a2 2 0 002 2h2" />
+              <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
+        {/* Loading skeleton */}
         {loading && (
-          <div className="rounded-3xl bg-white/80 backdrop-blur-xl shadow-soft border border-slate-200/80 overflow-hidden">
-            <div className="aspect-[16/9] bg-slate-100 animate-pulse" />
-            <div className="p-6 sm:p-8">
-              <div className="h-6 bg-slate-200 rounded w-1/3 animate-pulse mb-4" />
-              <div className="h-10 bg-slate-200 rounded w-3/4 animate-pulse mb-4" />
-              <div className="h-4 bg-slate-200 rounded w-full animate-pulse mb-2" />
-              <div className="h-4 bg-slate-200 rounded w-5/6 animate-pulse" />
+          <div className="space-y-6">
+            <div className="aspect-[16/9] bg-neutral-100 rounded-2xl animate-pulse" />
+            <div className="space-y-3">
+              <div className="h-5 bg-neutral-100 rounded-lg w-1/4 animate-pulse" />
+              <div className="h-10 bg-neutral-100 rounded-lg w-3/4 animate-pulse" />
+              <div className="h-4 bg-neutral-50 rounded-lg w-full animate-pulse" />
+              <div className="h-4 bg-neutral-50 rounded-lg w-5/6 animate-pulse" />
             </div>
           </div>
         )}
 
+        {/* Error */}
         {error && !loading && (
-          <div className="rounded-2xl bg-red-50/80 border border-red-200/70 text-red-700 px-4 py-3 shadow-sm">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="rounded-xl bg-red-50 border border-red-100 text-red-600 px-4 py-3 text-sm"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
+        {/* Blog content */}
         {!loading && !error && blog && (
           <>
-            <article className="rounded-3xl bg-white/90 backdrop-blur-xl shadow-soft border border-slate-200/80">
+            <motion.article
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               {/* Featured image */}
-              <div className="relative bg-slate-900 overflow-hidden rounded-t-3xl">
+              <div className="relative overflow-hidden rounded-2xl bg-neutral-100 mb-8 shadow-card">
                 <div className="aspect-[16/9]">
                   {blog?.featuredImage ? (
                     <img
@@ -360,158 +303,177 @@ export default function BlogDetailsPage({ slug, onBack }) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-600 to-primary-800">
-                      <span className="text-6xl text-white/30 font-extrabold">T</span>
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100">
+                      <span className="text-5xl text-neutral-200 font-serif font-bold">T</span>
                     </div>
                   )}
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-black/0" />
-                <span className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/85 backdrop-blur-sm text-xs font-semibold text-primary-700 shadow-sm border border-white/40">
+              </div>
+
+              {/* Category + Meta */}
+              <motion.div
+                className="flex flex-wrap items-center gap-3 mb-5"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+              >
+                <span className="px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 text-xs font-semibold border border-primary-100/50">
                   {blog?.category || 'Blog'}
                 </span>
-              </div>
-
-              {/* Header */}
-              <div className="p-6 sm:p-8">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-                  {blog?.title}
-                </h1>
-
-                <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-600">
+                <div className="flex items-center gap-4 text-xs text-neutral-400">
                   {blog?.createdAt && (
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>{formatDate(blog.createdAt)}</span>
-                    </div>
-                  )}
-                  {blog?.views != null && (
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      <span>{blog.views} views</span>
-                    </div>
-                  )}
-                  {readingTime && (
-                    <div className="flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>{readingTime} min read</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Share icons */}
-                <div className="mt-6 flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-semibold text-gray-700 mr-2">Share</span>
-                  <button
-                    onClick={() => handleShare('twitter')}
-                    className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 hover:bg-white hover:border-primary-200 hover:text-primary-700 transition shadow-sm"
-                  >
-                    X / Twitter
-                  </button>
-                  <button
-                    onClick={() => handleShare('linkedin')}
-                    className="px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 hover:bg-white hover:border-primary-200 hover:text-primary-700 transition shadow-sm"
-                  >
-                    LinkedIn
-                  </button>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="px-6 sm:px-8 pb-8">
-                <div className="h-px bg-slate-100 mb-8" />
-                <div
-                  className="blog-content prose-sm sm:prose-base lg:prose-lg max-w-none prose-slate prose-headings:text-slate-900 prose-a:text-primary-600 hover:prose-a:text-primary-700 prose-blockquote:border-primary-500 prose-img:rounded-xl prose-img:mx-auto prose-img:shadow-md"
-                  dangerouslySetInnerHTML={{ __html: processContent(blog?.content) }}
-                />
-              </div>
-            </article>
-
-            {/* Comments */}
-            <section className="mt-8 rounded-3xl bg-white/90 backdrop-blur-xl shadow-soft border border-slate-200/80 p-6 sm:p-8">
-              <div className="flex items-center justify-between gap-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Comments</h2>
-                <span className="text-sm text-slate-500">{comments.length} total</span>
-              </div>
-
-              <form onSubmit={submitComment} className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  name="name"
-                  value={commentForm.name}
-                  onChange={onCommentChange}
-                  placeholder="Your name"
-                  className="tn-input"
-                  disabled={commentStatus === 'loading'}
-                  required
-                />
-                <input
-                  name="email"
-                  type="email"
-                  value={commentForm.email}
-                  onChange={onCommentChange}
-                  placeholder="you@example.com"
-                  className="tn-input"
-                  disabled={commentStatus === 'loading'}
-                  required
-                />
-                <textarea
-                  name="comment"
-                  value={commentForm.comment}
-                  onChange={onCommentChange}
-                  placeholder="Write a comment..."
-                  rows={4}
-                  className="sm:col-span-2 tn-textarea"
-                  disabled={commentStatus === 'loading'}
-                  required
-                />
-                <div className="sm:col-span-2 flex items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={commentStatus === 'loading'}
-                    className="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-primary-600 text-white font-semibold hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-200/50 transition disabled:opacity-70"
-                  >
-                    {commentStatus === 'loading' ? 'Posting…' : 'Post Comment'}
-                  </button>
-                  {commentMessage && (
-                    <span
-                      className={`text-sm font-medium ${
-                        commentStatus === 'error' ? 'text-red-600' : 'text-emerald-600'
-                      }`}
-                    >
-                      {commentMessage}
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      {formatDate(blog.createdAt)}
                     </span>
                   )}
+                  {readingTime && <span>{readingTime} min read</span>}
+                  {blog?.views != null && <span>{blog.views} views</span>}
+                </div>
+              </motion.div>
+
+              {/* Title */}
+              <motion.h1
+                className="tn-heading text-3xl sm:text-4xl md:text-5xl leading-tight mb-6"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                {blog?.title}
+              </motion.h1>
+
+              {/* Share */}
+              <motion.div
+                className="flex items-center gap-2 mb-8 pb-8 border-b border-neutral-100"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <span className="text-xs font-medium text-neutral-400 mr-1">Share</span>
+                {['twitter', 'linkedin'].map((platform) => (
+                  <motion.button
+                    key={platform}
+                    onClick={() => handleShare(platform)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-neutral-600 bg-neutral-50 border border-neutral-100 hover:bg-white hover:border-neutral-200 hover:shadow-sm transition-all"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {platform === 'twitter' ? 'X / Twitter' : 'LinkedIn'}
+                  </motion.button>
+                ))}
+              </motion.div>
+
+              {/* Content */}
+              <motion.div
+                className="blog-content prose-sm sm:prose-base lg:prose-lg max-w-none prose-neutral prose-headings:text-neutral-900 prose-a:text-primary-600 hover:prose-a:text-primary-700 prose-blockquote:border-primary-500 prose-img:rounded-xl prose-img:mx-auto"
+                dangerouslySetInnerHTML={{ __html: processContent(blog?.content) }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.35 }}
+              />
+            </motion.article>
+
+            {/* Comments */}
+            <motion.section
+              className="mt-16 pt-10 border-t border-neutral-100"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="flex items-center justify-between gap-4 mb-8">
+                <h2 className="tn-heading text-xl sm:text-2xl">Comments</h2>
+                <span className="text-xs text-neutral-400 font-medium bg-neutral-50 px-2.5 py-1 rounded-lg">{comments.length} total</span>
+              </div>
+
+              <form onSubmit={submitComment} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input name="name" value={commentForm.name} onChange={onCommentChange} placeholder="Your name" className="tn-input" disabled={commentStatus === 'loading'} required />
+                <input name="email" type="email" value={commentForm.email} onChange={onCommentChange} placeholder="you@example.com" className="tn-input" disabled={commentStatus === 'loading'} required />
+                <textarea name="comment" value={commentForm.comment} onChange={onCommentChange} placeholder="Write a comment..." rows={4} className="sm:col-span-2 tn-textarea" disabled={commentStatus === 'loading'} required />
+                <div className="sm:col-span-2 flex items-center gap-3">
+                  <motion.button
+                    type="submit" disabled={commentStatus === 'loading'}
+                    className="tn-btn-primary"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {commentStatus === 'loading' ? 'Posting\u2026' : 'Post Comment'}
+                  </motion.button>
+                  <AnimatePresence>
+                    {commentMessage && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0 }}
+                        className={`text-sm font-medium ${commentStatus === 'error' ? 'text-red-600' : 'text-primary-600'}`}
+                      >
+                        {commentMessage}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
                 </div>
               </form>
 
               <div className="mt-8 space-y-4">
-                {commentsLoading && (
-                  <div className="text-sm text-slate-500">Loading comments…</div>
-                )}
+                {commentsLoading && <div className="text-sm text-neutral-400">Loading comments\u2026</div>}
                 {!commentsLoading && comments.length === 0 && (
-                  <div className="text-sm text-slate-500">No comments yet. Be the first to comment.</div>
+                  <div className="text-sm text-neutral-400 text-center py-8">No comments yet. Be the first to comment.</div>
                 )}
-                {comments.map((c) => (
-                  <div key={c._id} className="rounded-2xl border border-slate-100 bg-slate-50/60 p-4">
+                {comments.map((c, i) => (
+                  <motion.div
+                    key={c._id}
+                    className="p-5 rounded-xl bg-neutral-50/70 border border-neutral-100 hover:border-neutral-200 transition-colors"
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.05, duration: 0.3 }}
+                  >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="font-semibold text-slate-900">{c.name || 'Anonymous'}</div>
-                      {c.createdAt && (
-                        <div className="text-xs text-slate-500">
-                          {new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${avatarColors[i % avatarColors.length]}`}>
+                          {(c.name || 'A').charAt(0).toUpperCase()}
                         </div>
+                        <span className="font-semibold text-sm text-neutral-800">{c.name || 'Anonymous'}</span>
+                      </div>
+                      {c.createdAt && (
+                        <span className="text-xs text-neutral-400">
+                          {new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
                       )}
                     </div>
-                    <p className="mt-2 text-sm text-slate-700 leading-6 whitespace-pre-line">{c.comment}</p>
-                  </div>
+                    <p className="mt-2.5 text-sm text-neutral-600 leading-relaxed whitespace-pre-line">{c.comment}</p>
+                  </motion.div>
                 ))}
               </div>
-            </section>
+            </motion.section>
+
+            {/* Explore more CTA */}
+            <motion.div
+              className="mt-16 p-8 rounded-2xl bg-gradient-to-br from-neutral-50 to-primary-50/30 border border-neutral-100 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="w-12 h-12 rounded-full bg-white border border-neutral-200 shadow-sm flex items-center justify-center mx-auto mb-4">
+                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="tn-heading text-xl mb-2">Enjoyed this article?</h3>
+              <p className="text-sm text-neutral-500 mb-5 max-w-sm mx-auto">Discover more stories and insights on ThinkNest.</p>
+              <motion.button
+                onClick={onBack}
+                className="tn-btn-primary"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                Explore More Articles
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </motion.button>
+            </motion.div>
           </>
         )}
       </div>

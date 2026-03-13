@@ -2,17 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>http://localhost:5173/</loc>
-    <lastmod>2026-02-16T09:59:52.568Z</lastmod>
+    <lastmod>2026-03-10T08:13:08.350Z</lastmod>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>http://localhost:5173/blog/healthy-diet-plan</loc>
-    <lastmod>2026-02-16T09:39:39.011Z</lastmod>
+    <loc>http://localhost:5173/blog/best-ai-tools-for-students-in-2026-to-boost-productivity</loc>
+    <lastmod>2026-03-10T08:02:36.666Z</lastmod>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:5173/blog/healthy-morning-routine-for-students</loc>
-    <lastmod>2026-02-16T05:51:47.268Z</lastmod>
+    <loc>http://localhost:5173/blog/sleep-optimization-routine-for-students-improve-focus-and-productivity-in-2026</loc>
+    <lastmod>2026-03-10T07:58:36.706Z</lastmod>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:5173/blog/best-morning-routine-for-students-to-stay-healthy-and-productive-in-2026</loc>
+    <lastmod>2026-03-02T12:18:48.883Z</lastmod>
     <priority>0.8</priority>
   </url>
 </urlset>

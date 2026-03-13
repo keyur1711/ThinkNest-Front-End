@@ -18,6 +18,11 @@ import AdminComments from './components/AdminComments';
 import AdminSubscribers from './components/AdminSubscribers';
 import AdminMessages from './components/AdminMessages';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
+import TopicMarquee from './components/TopicMarquee';
+import WhyThinkNest from './components/WhyThinkNest';
+import Testimonials from './components/Testimonials';
+import Divider from './components/Divider';
 
 function App() {
   const [blogs, setBlogs] = useState([]);
@@ -132,7 +137,7 @@ function App() {
   const latestForTrending = blogs;
 
   return (
-    <div className="min-h-screen flex flex-col bg-[radial-gradient(1200px_700px_at_20%_-10%,rgba(99,102,241,0.18),transparent_55%),radial-gradient(900px_600px_at_90%_0%,rgba(129,140,248,0.12),transparent_55%),radial-gradient(900px_600px_at_50%_100%,rgba(15,23,42,0.06),transparent_60%)]">
+    <div className="min-h-screen flex flex-col bg-white">
       {route.name !== 'blog' && (
         <Helmet>
           <title>ThinkNest - Think Better. Live Smarter</title>
@@ -199,21 +204,27 @@ function App() {
               <Hero onSearch={setSearch} category={category} />
               {error && (
                 <div className="tn-container py-4 w-full">
-                  <p className="text-red-700 bg-red-50/80 backdrop-blur rounded-2xl px-4 py-3 text-sm border border-red-200/60 shadow-sm">
+                  <p className="text-red-600 bg-red-50 rounded-xl px-4 py-3 text-sm border border-red-100">
                     {error}
                   </p>
                 </div>
               )}
               <FeaturedBlog blog={featured} />
               <LatestBlogs blogs={latest} loading={loading} />
+              <Divider />
               <TrendingBlogs />
+              <TopicMarquee />
+              <WhyThinkNest />
+              <Testimonials />
               <Newsletter />
+              <Divider />
               <ContactSection />
             </>
           )}
         </motion.div>
       </AnimatePresence>
       {!route.name.startsWith('admin') && <Footer />}
+      {!route.name.startsWith('admin') && <ScrollToTop />}
     </div>
   );
 }

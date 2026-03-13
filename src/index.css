@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -15,47 +15,42 @@ html {
 
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    @apply antialiased text-slate-900 bg-slate-50;
+    @apply antialiased text-neutral-800 bg-white;
   }
 
-  /* Better default focus visibility */
   :focus-visible {
-    outline: none;
+    @apply outline-2 outline-offset-2 outline-primary-500;
   }
 }
 
 @layer components {
   .tn-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply max-w-7xl mx-auto px-5 sm:px-6 lg:px-8;
   }
 
   .tn-section {
-    @apply py-12 md:py-16;
+    @apply py-16 md:py-24;
   }
 
-  .tn-surface {
-    @apply bg-white/80 backdrop-blur-xl border border-slate-200/70 shadow-[0_10px_30px_rgba(2,6,23,0.06)];
+  .tn-label {
+    @apply inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-primary-700;
+  }
+
+  .tn-heading {
+    @apply font-serif font-bold tracking-tight text-neutral-900;
   }
 
   .tn-card {
-    @apply rounded-3xl tn-surface;
+    @apply bg-white rounded-2xl border border-neutral-100 shadow-card;
   }
 
   .tn-card-hover {
-    @apply transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(2,6,23,0.10)] hover:border-primary-200/60;
-  }
-
-  .tn-pill {
-    @apply inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium bg-white/70 border border-slate-200/70;
-  }
-
-  .tn-badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold bg-primary-50 text-primary-700 border border-primary-200/40;
+    @apply transition-all duration-300 hover:shadow-elevated hover:border-neutral-200 hover:-translate-y-1;
   }
 
   .tn-input {
-    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-900 placeholder-slate-400 shadow-sm transition;
-    @apply focus:border-primary-400 focus:ring-2 focus:ring-primary-500/30;
+    @apply w-full rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-neutral-800 placeholder-neutral-400 transition-all duration-200;
+    @apply focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 focus:outline-none;
     @apply disabled:opacity-60 disabled:cursor-not-allowed;
   }
 
@@ -64,56 +59,106 @@ html {
   }
 
   .tn-btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-200;
-    @apply focus:ring-2 focus:ring-primary-500/40 focus:ring-offset-2 focus:ring-offset-slate-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-200;
+    @apply focus:ring-2 focus:ring-primary-500/30 focus:ring-offset-2 focus:outline-none;
     @apply disabled:opacity-60 disabled:cursor-not-allowed;
   }
 
   .tn-btn-primary {
-    @apply tn-btn bg-primary-600 text-white shadow-sm hover:bg-primary-700 hover:shadow-md;
+    @apply tn-btn bg-neutral-900 text-white hover:bg-neutral-800 active:bg-neutral-950 hover:shadow-lg hover:shadow-neutral-900/20 active:scale-[0.98];
   }
 
   .tn-btn-secondary {
-    @apply tn-btn bg-slate-900 text-white shadow-sm hover:bg-slate-800 hover:shadow-md;
+    @apply tn-btn bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50 hover:text-neutral-900 hover:border-neutral-300 active:scale-[0.98];
   }
 
-  .tn-btn-ghost {
-    @apply tn-btn bg-white/70 text-slate-700 border border-slate-200/80 hover:bg-white hover:text-slate-900;
+  .tn-btn-accent {
+    @apply tn-btn bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 hover:shadow-lg hover:shadow-primary-500/25 active:scale-[0.98];
   }
 }
 
 ::selection {
-  background-color: #ddd6fe;
-  color: #4c1d95;
+  background-color: #dcfce7;
+  color: #14532d;
 }
 
-@keyframes blob {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -20px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
+/* ——— Animations ——— */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
 }
 
-.animate-blob {
-  animation: blob 8s infinite ease-in-out;
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
 
-.animation-delay-2000 {
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 8s ease-in-out infinite;
+}
+
+.animate-float-delay {
+  animation: float 6s ease-in-out infinite;
   animation-delay: 2s;
 }
 
-.animation-delay-4000 {
-  animation-delay: 4s;
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up-fade 0.6s ease-out forwards;
+}
+
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+.animation-delay-600 { animation-delay: 0.6s; }
+.animation-delay-1000 { animation-delay: 1s; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-3000 { animation-delay: 3s; }
+
+/* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* ——— Quill Editor Overrides ——— */
@@ -140,62 +185,58 @@ html {
   font-style: normal;
 }
 
-/* ——— Blog Content Prose Overrides ——— */
+/* ——— Blog Content Prose ——— */
 .blog-content {
-  max-width: 60rem;
+  max-width: 65ch;
   margin-left: auto;
   margin-right: auto;
-  font-size: 0.95rem;
-  line-height: 1.8;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  color: #374151;
 }
 
 .blog-content blockquote {
-  background: rgba(245, 243, 255, 0.9);
+  background: #f9fafb;
+  border-left: 3px solid #22c55e;
   border-radius: 0 0.5rem 0.5rem 0;
-  padding: 0.75em 1.25em;
+  padding: 1em 1.5em;
+  font-style: italic;
+  color: #4b5563;
 }
 
 .blog-content h1,
 .blog-content h2,
 .blog-content h3,
 .blog-content h4 {
-  margin-top: 2rem;
+  font-family: 'Playfair Display', Georgia, serif;
+  margin-top: 2.5rem;
   margin-bottom: 0.75rem;
-  line-height: 1.35;
+  line-height: 1.3;
   letter-spacing: -0.02em;
+  color: #111827;
 }
 
-.blog-content h1 {
-  font-size: 1.7rem;
-}
-
-.blog-content h2 {
-  font-size: 1.35rem;
-}
-
-.blog-content h3 {
-  font-size: 1.15rem;
-}
+.blog-content h1 { font-size: 1.875rem; }
+.blog-content h2 { font-size: 1.5rem; }
+.blog-content h3 { font-size: 1.25rem; }
 
 .blog-content p {
-  margin-bottom: 1.1em;
+  margin-bottom: 1.25em;
 }
 
 .blog-content img {
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin: 2.5em auto;
+  border-radius: 0.75rem;
 }
 
 .blog-content p > img {
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
 }
 
 .blog-content figure {
-  margin: 2em 0;
+  margin: 2.5em 0;
   text-align: center;
 }
 
@@ -216,5 +257,12 @@ html {
 }
 
 .blog-content a {
+  color: #16a34a;
+  text-decoration: underline;
   text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+
+.blog-content a:hover {
+  color: #15803d;
 }
