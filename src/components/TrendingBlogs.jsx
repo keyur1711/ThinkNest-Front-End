@@ -79,7 +79,7 @@ export default function TrendingBlogs() {
       </motion.div>
 
       {/* Desktop Grid */}
-      <div className="relative hidden md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <div className="relative hidden md:grid md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
         {trendingBlogs.map((blog, i) => (
           <BlogCard key={blog._id || blog.slug} blog={blog} index={i} />
         ))}

@@ -35,12 +35,14 @@ export default function TopicMarquee() {
 
   return (
     <motion.section
-      className="py-12 md:py-16 overflow-hidden bg-gradient-to-r from-primary-50/30 via-emerald-50/20 to-teal-50/30"
+      className="py-20 md:py-24 overflow-hidden bg-gradient-to-br from-primary-50/50 via-white to-emerald-50/40 relative"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.8 }}
     >
+      <div className="absolute top-0 left-0 w-64 h-64 bg-primary-100/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-80 h-80 bg-emerald-100/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
       <div className="tn-container mb-8 text-center">
         <div className="tn-label justify-center mb-3">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

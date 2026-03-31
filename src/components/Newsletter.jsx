@@ -70,16 +70,16 @@ export default function Newsletter() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Stay in the loop
+            Join the ThinkNest Circle
           </motion.h2>
           <motion.p
-            className="mt-4 text-neutral-400 text-sm sm:text-base max-w-lg mx-auto leading-relaxed"
+            className="mt-4 text-neutral-400 text-base sm:text-lg max-w-lg mx-auto leading-relaxed"
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
-            Get the latest articles delivered straight to your inbox. No spam, ever.
+            Get exclusive insights, expert advice, and the latest stories delivered directly to your inbox.
           </motion.p>
 
           <motion.div

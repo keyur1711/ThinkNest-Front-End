@@ -23,6 +23,9 @@ import TopicMarquee from './components/TopicMarquee';
 import WhyThinkNest from './components/WhyThinkNest';
 import Testimonials from './components/Testimonials';
 import Divider from './components/Divider';
+import CategoryGrid from './components/CategoryGrid';
+import Statistics from './components/Statistics';
+import AuthorHighlight from './components/AuthorHighlight';
 
 function App() {
   const [blogs, setBlogs] = useState([]);
@@ -132,8 +135,19 @@ function App() {
       .finally(() => setLoading(false));
   }, [params]);
 
-  const featured = blogs[0] || null;
-  const latest = blogs.slice(featured ? 1 : 0, featured ? 7 : 6);
+  const displayBlogs = useMemo(() => {
+    if (blogs.length === 0) return [];
+    if (blogs.length >= 12) return blogs;
+    // Duplicate mock data to ensure front page looks professional/full
+    const repeated = [];
+    while (repeated.length < 13) {
+      repeated.push(...blogs);
+    }
+    return repeated.slice(0, 13);
+  }, [blogs]);
+
+  const featured = displayBlogs[0] || null;
+  const latest = displayBlogs.slice(featured ? 1 : 0, (featured ? 13 : 12));
   const latestForTrending = blogs;
 
   return (
@@ -210,10 +224,14 @@ function App() {
                 </div>
               )}
               <FeaturedBlog blog={featured} />
+              <CategoryGrid />
+              <Divider />
               <LatestBlogs blogs={latest} loading={loading} />
+              <Statistics />
               <Divider />
               <TrendingBlogs />
               <TopicMarquee />
+              <AuthorHighlight />
               <WhyThinkNest />
               <Testimonials />
               <Newsletter />

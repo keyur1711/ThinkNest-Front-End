@@ -25,7 +25,7 @@ html {
 
 @layer components {
   .tn-container {
-    @apply max-w-7xl mx-auto px-5 sm:px-6 lg:px-8;
+    @apply w-full px-5 sm:px-8 md:px-12 lg:px-16;
   }
 
   .tn-section {
@@ -38,6 +38,7 @@ html {
 
   .tn-heading {
     @apply font-serif font-bold tracking-tight text-neutral-900;
+    text-wrap: balance;
   }
 
   .tn-card {

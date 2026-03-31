@@ -7,7 +7,7 @@ export default function LatestBlogs({ blogs, loading }) {
       <section className="tn-container tn-section">
         <div className="tn-label mb-2">Latest Articles</div>
         <p className="text-neutral-400 text-sm mb-10">Fresh stories and ideas, just for you</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {[1, 2, 3].map((i) => (
             <div key={i} className="rounded-2xl bg-white border border-neutral-100 overflow-hidden shadow-card">
               <div className="aspect-[16/10] bg-neutral-100 animate-pulse" />
@@ -38,7 +38,7 @@ export default function LatestBlogs({ blogs, loading }) {
           <div className="tn-label mb-2">Latest Articles</div>
           <p className="text-neutral-500 text-sm mb-10">Fresh stories and ideas, just for you</p>
         </motion.div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
           {blogs.map((blog, i) => (
             <BlogCard key={blog._id} blog={blog} index={i} />
           ))}

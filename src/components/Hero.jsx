@@ -71,15 +71,15 @@ export default function Hero({ onSearch, category }) {
 
         {/* Heading */}
         <motion.h1
-          className="tn-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.08]"
+          className="tn-heading text-4xl sm:text-5xl md:text-6xl lg:text-[80px] leading-[1.05] tracking-tight"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          Think Better.{' '}
+          Insights for the{' '}
           <span className="relative">
             <span className="bg-gradient-to-r from-primary-600 via-emerald-500 to-primary-600 bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-              Live Smarter.
+              Modern Mind.
             </span>
             <motion.svg
               className="absolute -bottom-2 left-0 w-full h-3 text-primary-300/60"
@@ -104,18 +104,18 @@ export default function Hero({ onSearch, category }) {
 
         {/* Subtitle */}
         <motion.p
-          className="mt-6 text-base sm:text-lg text-neutral-500 max-w-xl mx-auto leading-relaxed"
+          className="mt-8 text-base sm:text-lg md:text-xl text-neutral-600 max-w-2xl mx-auto leading-relaxed"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.25 }}
         >
-          Discover ideas about health, technology, productivity and life.
+          Expertly crafted stories on technology, health, and productivity to help you live smarter.
         </motion.p>
 
         {/* Search Bar */}
         <motion.form
           onSubmit={handleSubmit}
-          className="mt-10 max-w-lg mx-auto"
+          className="mt-10 max-w-xl mx-auto"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35 }}

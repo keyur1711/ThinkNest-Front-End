@@ -82,9 +82,12 @@ export default function ContactSection() {
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
+      transition={{ duration: 0.7, ease: 'easeOut' }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/60 via-neutral-50/40 to-white pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-neutral-50/80 via-white to-white pointer-events-none" />
+      {/* Decorative orbs */}
+      <div className="absolute top-40 -left-20 w-96 h-96 bg-primary-100/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-blue-100/20 rounded-full blur-3xl pointer-events-none" />
       <div className="relative tn-container">
       <div className="text-center mb-14">
         <motion.div

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { addComment, getBlogBySlug, getCommentsByBlog } from '../services/api';
+import { addComment, getBlogBySlug, getCommentsByBlog, getBlogs } from '../services/api';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
+import BlogCard from './BlogCard';
 
 const calculateReadingTime = (content) => {
   if (!content) return null;
@@ -63,6 +64,8 @@ export default function BlogDetailsPage({ slug, onBack }) {
   const [commentMessage, setCommentMessage] = useState('');
   const [commentForm, setCommentForm] = useState({ name: '', email: '', comment: '' });
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [relatedBlogs, setRelatedBlogs] = useState([]);
+  const [relatedLoading, setRelatedLoading] = useState(false);
   const contentRef = useRef(null);
 
   const readingTime = useMemo(() => calculateReadingTime(blog?.content), [blog?.content]);
@@ -98,6 +101,20 @@ export default function BlogDetailsPage({ slug, onBack }) {
       .finally(() => alive && setCommentsLoading(false));
     return () => { alive = false; };
   }, [blog?._id]);
+
+  useEffect(() => {
+    if (!blog?.category) return;
+    let alive = true;
+    setRelatedLoading(true);
+    getBlogs({ category: blog.category, limit: 4 })
+      .then((res) => {
+        if (alive && res?.success && Array.isArray(res?.data)) {
+          setRelatedBlogs(res.data.filter(b => b._id !== blog._id).slice(0, 3));
+        }
+      })
+      .finally(() => alive && setRelatedLoading(false));
+    return () => { alive = false; };
+  }, [blog?._id, blog?.category]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -371,7 +388,67 @@ export default function BlogDetailsPage({ slug, onBack }) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.35 }}
               />
+
+              {/* Ad Placeholder Bottom */}
+              <motion.div
+                className="mt-12 p-6 rounded-2xl bg-neutral-50 border border-dashed border-neutral-200 text-center"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-2 block">Advertisement</span>
+                <div className="h-24 flex items-center justify-center text-sm text-neutral-400 font-medium">
+                  Sponsored Content Placement
+                </div>
+              </motion.div>
+
+              {/* Author Card */}
+              <motion.div
+                className="mt-16 p-8 rounded-3xl bg-neutral-900 text-white relative overflow-hidden"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 rounded-bl-[100px] blur-2xl" />
+                <div className="relative flex flex-col sm:flex-row items-center gap-6">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary-400 to-emerald-500 flex items-center justify-center text-white text-2xl font-serif font-bold shadow-lg">
+                    TN
+                  </div>
+                  <div className="text-center sm:text-left">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400 mb-1 block">Author</span>
+                    <h3 className="text-xl font-bold mb-2">ThinkNest Editorial Team</h3>
+                    <p className="text-sm text-neutral-400 leading-relaxed max-w-lg">
+                      Professional writers and industry experts dedicated to bringing you the most thoughtful insights on technology, health, and modern living.
+                    </p>
+                    <div className="mt-4 flex items-center justify-center sm:justify-start gap-3">
+                      {['Twitter', 'LinkedIn'].map(s => (
+                        <a key={s} href="#" className="text-xs font-medium text-primary-400 hover:text-primary-300 transition-colors">{s}</a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </motion.article>
+
+            {/* Related Posts */}
+            {!relatedLoading && relatedBlogs.length > 0 && (
+              <section className="mt-20 pt-10 border-t border-neutral-100">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="tn-heading text-2xl">Related Articles</h2>
+                  <motion.button
+                    onClick={onBack}
+                    className="text-xs font-bold uppercase tracking-widest text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    View All
+                  </motion.button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {relatedBlogs.map((b, i) => (
+                    <BlogCard key={b._id} blog={b} index={i} />
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Comments */}
             <motion.section

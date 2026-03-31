@@ -3,11 +3,19 @@ import { motion } from 'framer-motion';
 export default function Footer() {
   const quickLinks = [
     { label: 'Home', href: '/#/', category: '' },
+    { label: 'About Us', href: '#', category: null },
     { label: 'Technology', href: '/#/category/Technology', category: 'Technology' },
     { label: 'Health', href: '/#/category/Health', category: 'Health' },
     { label: 'Lifestyle', href: '/#/category/Lifestyle', category: 'Lifestyle' },
     { label: 'Food', href: '/#/category/Food', category: 'Food' },
     { label: 'Contact', href: '#contact', category: null },
+  ];
+
+  const legalLinks = [
+    { label: 'Privacy Policy', href: '#' },
+    { label: 'Terms of Service', href: '#' },
+    { label: 'Cookie Policy', href: '#' },
+    { label: 'Careers', href: '#' },
   ];
 
   const socials = [
@@ -86,15 +94,33 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick links */}
-          <div className="md:col-span-4">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-white mb-5">Quick Links</h3>
+          {/* Navigation */}
+          <div className="md:col-span-3">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-white mb-5">Navigation</h3>
             <ul className="space-y-3">
               {quickLinks.map((l) => (
                 <li key={l.label}>
                   <a
                     href={l.href}
-                    onClick={l.category === null ? scrollToContact : applyCategory(l.category || '')}
+                    onClick={l.category === null && l.label === 'Contact' ? scrollToContact : (l.category !== null ? applyCategory(l.category || '') : undefined)}
+                    className="group inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
+                  >
+                    <span className="w-0 h-0.5 rounded bg-primary-500 group-hover:w-3 transition-all duration-300" />
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal links */}
+          <div className="md:col-span-2">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-white mb-5">Company</h3>
+            <ul className="space-y-3">
+              {legalLinks.map((l) => (
+                <li key={l.label}>
+                  <a
+                    href={l.href}
                     className="group inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors"
                   >
                     <span className="w-0 h-0.5 rounded bg-primary-500 group-hover:w-3 transition-all duration-300" />
